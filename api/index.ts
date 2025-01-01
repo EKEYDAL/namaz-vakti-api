@@ -13,11 +13,9 @@ import {
   isValidDate,
 } from "../src/util";
 
-export const app: Express = express();
+const app: Express = express();
 
-/** use this function like `app.use(allowOriginForAll);` for an express app
- * Make API accessible for all clients. Not for only clients from a specific domain.
- */
+/** API'nin tüm istemciler tarafından erişilebilir olmasını sağlar */
 const allowOriginForAll: RequestHandler = (
   _: Request,
   res: Response,
@@ -43,6 +41,7 @@ app.get("/api/cities", getCitiesOfRegion);
 app.get("/api/coordinates", getCoordinateData);
 app.get("/api/place", getPlaceData);
 app.get("/api/ip", getIPAdress);
+
 app.post("/api/timesFromCoordinates", getTimesFromCoordinates);
 app.post("/api/timesFromPlace", getTimesFromPlace);
 app.post("/api/countries", getCountries);
@@ -52,13 +51,8 @@ app.post("/api/coordinates", getCoordinateData);
 app.post("/api/place", getPlaceData);
 app.post("/api/ip", getIPAdress);
 
-const PORT = process.env.PORT || 3000;
-export const httpServer = app.listen(PORT);
+/** API işlevleri */
 
-/** get a list of countries
- * @param  {} _
- * @param  {} res
- */
 function getCountries(_: Request, res: Response) {
   const r = [];
   for (const c in ALL_PLACES) {
@@ -110,11 +104,11 @@ function getTimesFromCoordinates(req: Request, res: Response) {
   const lat = Number(req.query.lat as string);
   const lng = Number(req.query.lng as string);
   const dateStr = req.query.date as string;
-  const date = isValidDate(dateStr) ? new Date(dateStr) : new Date(); // use today if invalid
+  const date = isValidDate(dateStr) ? new Date(dateStr) : new Date();
   const daysParam = Number(req.query.days as string);
-  const days = isNaN(daysParam) || daysParam < 1 ? 100 : daysParam; // 100 is default
+  const days = isNaN(daysParam) || daysParam < 1 ? 100 : daysParam;
   const tzParam = Number(req.query.timezoneOffset as string);
-  const tzOffset = isNaN(tzParam) ? 0 : tzParam; // 0 is default
+  const tzOffset = isNaN(tzParam) ? 0 : tzParam;
   const calculateMethod = getCalculationMethodParameter(
     req.query.calculationMethod as string
   );
@@ -148,11 +142,11 @@ function getTimesFromPlace(req: Request, res: Response) {
   const city = req.query.city as string;
   const place = getPlace(country, region, city);
   const dateStr = req.query.date as string;
-  const date = isValidDate(dateStr) ? new Date(dateStr) : new Date(); // use today if invalid
+  const date = isValidDate(dateStr) ? new Date(dateStr) : new Date();
   const daysParam = Number(req.query.days as string);
-  const days = isNaN(daysParam) || daysParam < 1 ? 100 : daysParam; // 50 is default
+  const days = isNaN(daysParam) || daysParam < 1 ? 100 : daysParam;
   const tzParam = Number(req.query.timezoneOffset as string);
-  const tzOffset = isNaN(tzParam) ? 0 : tzParam; // 0 is default
+  const tzOffset = isNaN(tzParam) ? 0 : tzParam;
   const calculateMethod = getCalculationMethodParameter(
     req.query.calculationMethod as string
   );
@@ -174,3 +168,6 @@ function logIPAdress(req: Request, _: Response, next: NextFunction) {
   console.log("IP address:", req.headers["x-forwarded-for"]);
   next();
 }
+
+/** Vercel için varsayılan dışa aktarım */
+export default app;
